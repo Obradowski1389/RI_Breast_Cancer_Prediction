@@ -61,7 +61,7 @@ def cnn_accuracy():
     train_p = clf.predict(X_train)
     test_p = clf.predict(X_test)
 
-    train_acc = accuracy_score.score(Y_train, train_p)
+    train_acc = accuracy_score(Y_train, train_p)
     test_acc = accuracy_score(Y_test, test_p)
 
     return test_acc, train_acc
