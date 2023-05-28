@@ -19,6 +19,7 @@ def load_dataset():
     ])
 
     df.drop('id', axis=1, inplace=True)
+    df.replace('?', np.nan, inplace=True)
 
     # print(df.head)
 
@@ -30,15 +31,11 @@ def split_data():
 def handle_incorrect_values_method1():
     global df
 
-    df.replace('?', np.nan, inplace=True)
-
     df.dropna(inplace=True)
 
 
 def handle_incorrect_values_method2():
     global df
-    
-    df.replace('?', np.nan, inplace=True)
     
     # Convert columns to numeric type
     df = df.apply(pd.to_numeric, errors='coerce')
@@ -46,11 +43,6 @@ def handle_incorrect_values_method2():
     column_averages = df.mean()
 
     df.fillna(column_averages, inplace=True)
-
-
-def handle_incorrect_values_method3():
-    # Slicnost po ostalim kolonama KNN algorimom 
-    raise NotImplementedError
     
 
 def build_model():
@@ -66,13 +58,13 @@ def build_model():
 def cnn_accuracy():
     global X_train, X_test, Y_train, Y_test, df
     
-    # train_p = clf.predict(X_train)
+    train_p = clf.predict(X_train)
     test_p = clf.predict(X_test)
 
-    # train_acc = accuracy_score.score(Y_train, train_p)
+    train_acc = accuracy_score.score(Y_train, train_p)
     test_acc = accuracy_score(Y_test, test_p)
 
-    return test_acc
+    return test_acc, train_acc
 
 
 
@@ -92,7 +84,7 @@ def main():
     X_test = scaler.fit_transform(X_test)
     clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(15,), random_state=1)
     clf.fit(X_train, Y_train)
-    cnn = cnn_accuracy()
+    cnn, _ = cnn_accuracy()
     print("CNN:", cnn)
 
     models = pd.DataFrame({'Model': ['CNN', 'Linear Regresion', 'Random Forest'], 'Score': [cnn, lr, rf]})
