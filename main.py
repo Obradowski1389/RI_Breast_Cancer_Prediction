@@ -7,6 +7,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import accuracy_score
 
+from ann_comp_graph import *
+
 
 global X_train, X_test, Y_train, Y_test, df, clf
 
@@ -22,10 +24,6 @@ def load_dataset():
     df.replace('?', np.nan, inplace=True)
 
     # print(df.head)
-
-
-def split_data():
-    raise NotImplementedError
 
 
 def handle_incorrect_values_method1():
@@ -64,8 +62,35 @@ def cnn_accuracy():
     train_acc = accuracy_score(Y_train, train_p)
     test_acc = accuracy_score(Y_test, test_p)
 
-    return test_acc, train_acc
+    return test_acc * 100, train_acc
 
+
+def tts(df, percent):
+    # train=df.sample(frac=percent,random_state=200)
+    train=df.sample(frac=percent)
+    test=df.drop(train.index)
+    return train, test
+
+
+def predict_mse(nn, test_x, test_y):
+    good = 0
+    for x, y in zip(test_x, test_y):
+        res = nn.predict(x)
+        res = normalize_res(res[0])
+        if (res == y):
+            good += 1
+        print(res, y)
+    return good/len(test_x) * 100
+
+
+def normalize_res(res):
+    distance_to_2 = abs(res - 2)
+    distance_to_4 = abs(res - 4)
+
+    if distance_to_2 < distance_to_4:
+        return 2
+    else:
+        return 4
 
 
 def main():
@@ -74,7 +99,23 @@ def main():
     handle_incorrect_values_method2()
     build_model()
 
-    # print(df.head())
+    ann_train, ann_test = tts(df, 0.7)
+
+    
+    ann_train_y = np.array([ann_train['class'].to_numpy()]).transpose()
+    ann_train_x = ann_train.drop('class', axis=1).to_numpy()
+
+    ann_test_y = ann_test['class'].to_numpy()
+    ann_test_x = ann_test.drop('class', axis=1).to_numpy()
+    ann_scaler = StandardScaler()
+    ann_train_x = ann_scaler.fit_transform(ann_train_x)
+    ann_test_x = ann_scaler.transform(ann_test_x)
+
+    nn = NeuralNetwork()
+    nn.add(NeuralLayer(ann_train_x.shape[1], 16, 'sigmoid'))
+    nn.add(NeuralLayer(16, 1, 'relu'))
+    hist = nn.fit(ann_train_x, ann_train_y, learning_rate=0.1, momentum=0.3, nb_epochs=10, shuffle=True, verbose=1)
+    ann_ftn = predict_mse(nn, ann_test_x, ann_test_y)
 
     lr = 0 # linear_regression(X_train, X_test, Y_train, Y_test, df)
     rf = 0 # random_forest(X_train, X_test, Y_train, Y_test, df)
@@ -85,14 +126,15 @@ def main():
     clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(15,), random_state=1)
     clf.fit(X_train, Y_train)
     cnn, _ = cnn_accuracy()
-    print("CNN:", cnn)
+    print("CNN: ", cnn)
+    print("ann_ftn: ", ann_ftn)
 
-    models = pd.DataFrame({'Model': ['CNN', 'Linear Regresion', 'Random Forest'], 'Score': [cnn, lr, rf]})
+    models = pd.DataFrame({'Model': ['CNN', 'Linear Regresion', 'Random Forest', 'ANN_FTN'], 'Score': [cnn, lr, rf, ann_ftn]})
     models.sort_values(by='Score', ascending=False)
 
     bar = px.bar(data_frame=models, x='Score', y='Model', color='Score', template='plotly_dark', title='Comparison')
 
-    bar.show()
+    # bar.show()
 
 
 if __name__ == "__main__":
