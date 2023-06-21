@@ -43,3 +43,4 @@ def classification_model(model,data, prediction_input, output):
         error.append(model.score(test_X,test_y))
     
         print("Cross-Validation Score : %s" % "{0:.3%}".format(np.mean(error)))
+    return accuracy

@@ -17,6 +17,7 @@ import ml
 
 global X_train, X_test, Y_train, Y_test, df, clf, names
 
+
 def explore_data():
     global df
 
@@ -46,7 +47,7 @@ def load_dataset():
     df.replace('?', np.nan, inplace=True)
 
     # print(df.head)
-    explore_data()
+    # explore_data()
 
 
 def handle_incorrect_values_method1():
@@ -102,7 +103,6 @@ def predict_mse(nn, test_x, test_y):
         res = normalize_res(res[0])
         if (res == y):
             good += 1
-        print(res, y)
     return good/len(test_x) * 100
 
 
@@ -126,11 +126,11 @@ def main():
     prediction_output = "class"
 
     print("\n\nDecision Tree")
-    ml.classification_model(DecisionTreeClassifier(), df, prediction_input, prediction_output)
+    dt = ml.classification_model(DecisionTreeClassifier(), df, prediction_input, prediction_output) * 100
     print("\n\nK Neighbors")
-    ml.classification_model(KNeighborsClassifier(), df, prediction_input, prediction_output)
+    kn = ml.classification_model(KNeighborsClassifier(), df, prediction_input, prediction_output) * 100
     print("\n\nRandom Forest")
-    ml.classification_model(RandomForestClassifier(n_estimators=100), df, prediction_input, prediction_output)
+    rf = ml.classification_model(RandomForestClassifier(n_estimators=100), df, prediction_input, prediction_output) * 100
 
     
     ann_train, ann_test = tts(df, 0.7)
@@ -149,24 +149,19 @@ def main():
     hist = nn.fit(ann_train_x, ann_train_y, learning_rate=0.1, momentum=0.3, nb_epochs=10, shuffle=True, verbose=1)
     ann_ftn = predict_mse(nn, ann_test_x, ann_test_y)
 
-    lr = 0 # linear_regression(X_train, X_test, Y_train, Y_test, df)
-    rf = 0 # random_forest(X_train, X_test, Y_train, Y_test, df)
-
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.fit_transform(X_test)
     clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(15,), random_state=1)
     clf.fit(X_train, Y_train)
     cnn, _ = cnn_accuracy()
-    print("CNN: ", cnn)
-    print("ann_ftn: ", ann_ftn)
 
-    models = pd.DataFrame({'Model': ['CNN', 'Linear Regresion', 'Random Forest', 'ANN_FTN'], 'Score': [cnn, lr, rf, ann_ftn]})
+    models = pd.DataFrame({'Model': ['CNN', 'Decision Tree', 'Random Forest', 'K Neighbors', 'ANN_FTN'], 'Score': [cnn, dt, rf, kn, ann_ftn]})
     models.sort_values(by='Score', ascending=False)
 
     bar = px.bar(data_frame=models, x='Score', y='Model', color='Score', template='plotly_dark', title='Comparison')
 
-    # bar.show()
+    bar.show()
 
 
 if __name__ == "__main__":
