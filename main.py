@@ -2,28 +2,51 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import plotly.express as px
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.tree import DecisionTreeClassifier
 
 from ann_comp_graph import *
 
+import ml
 
-global X_train, X_test, Y_train, Y_test, df, clf
+
+global X_train, X_test, Y_train, Y_test, df, clf, names
+
+def explore_data():
+    global df
+
+    df["class"] = df["class"].map({2:0, 4:1})
+    print(df.describe())
+    diagnosis_counts = df['class'].value_counts()
+    diagnosis_labels = ['Benign', 'Malignant']
+
+    # Creating the bar plot
+    # plt.bar(diagnosis_labels, diagnosis_counts, width=0.5)
+
+    # # Adding labels and title
+    # plt.xlabel('Diagnosis')
+    # plt.ylabel('Count')
+    # plt.show()
 
 
 def load_dataset():
-    global df
-    df = pd.read_csv('./Dataset/breast-cancer-wisconsin.data', names=[
+    global df, names
+    names = [
         'id', 'clumpThickness', 'uniformityOfCellSize', 'uniformityOfCellShape', 'MarginalAdhesion', 
         'singleEpithelialCellSize', 'bareNuclei', 'blandChromatin', 'normalNucleoli', 'mitoses', 'class'
-    ])
+    ]
+    df = pd.read_csv('./Dataset/breast-cancer-wisconsin.data', names=names)
 
     df.drop('id', axis=1, inplace=True)
     df.replace('?', np.nan, inplace=True)
 
     # print(df.head)
+    explore_data()
 
 
 def handle_incorrect_values_method1():
@@ -99,9 +122,18 @@ def main():
     handle_incorrect_values_method2()
     build_model()
 
-    ann_train, ann_test = tts(df, 0.7)
+    prediction_input = [x for x in names if x!= "class" and x != "id"]
+    prediction_output = "class"
+
+    print("\n\nDecision Tree")
+    ml.classification_model(DecisionTreeClassifier(), df, prediction_input, prediction_output)
+    print("\n\nK Neighbors")
+    ml.classification_model(KNeighborsClassifier(), df, prediction_input, prediction_output)
+    print("\n\nRandom Forest")
+    ml.classification_model(RandomForestClassifier(n_estimators=100), df, prediction_input, prediction_output)
 
     
+    ann_train, ann_test = tts(df, 0.7)
     ann_train_y = np.array([ann_train['class'].to_numpy()]).transpose()
     ann_train_x = ann_train.drop('class', axis=1).to_numpy()
 
