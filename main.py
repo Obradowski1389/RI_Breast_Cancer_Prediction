@@ -125,12 +125,13 @@ def main():
     prediction_input = [x for x in names if x!= "class" and x != "id"]
     prediction_output = "class"
 
+    split = [X_train, Y_train, X_test, Y_test]
     print("\n\nDecision Tree")
-    dt = ml.classification_model(DecisionTreeClassifier(), df, prediction_input, prediction_output) * 100
+    dt = ml.classification_model(DecisionTreeClassifier(), df, prediction_input, prediction_output, split) * 100
     print("\n\nK Neighbors")
-    kn = ml.classification_model(KNeighborsClassifier(), df, prediction_input, prediction_output) * 100
+    kn = ml.classification_model(KNeighborsClassifier(), df, prediction_input, prediction_output, split) * 100
     print("\n\nRandom Forest")
-    rf = ml.classification_model(RandomForestClassifier(n_estimators=100), df, prediction_input, prediction_output) * 100
+    rf = ml.classification_model(RandomForestClassifier(n_estimators=100), df, prediction_input, prediction_output, split) * 100
 
     
     ann_train, ann_test = tts(df, 0.7)

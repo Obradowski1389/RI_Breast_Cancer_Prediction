@@ -4,22 +4,11 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import numpy as np
 
-
-global X_train, X_test, Y_train, Y_test
-
-def build_model(df):
-    global X_train, X_test, Y_train, Y_test
-
-    X_train, X_test, Y_train, Y_test = train_test_split(
-        df[[col for col in df.columns if col != 'class']],
-        df['class'],
-        test_size=0.30,
-        random_state=0)
-
-def classification_model(model,data, prediction_input, output):
-    global X_train, X_test, Y_train, Y_test
-    build_model(data)
-
+def classification_model(model,data, prediction_input, output, split):
+    X_train = split[0]
+    Y_train=split[1]
+    X_test = split[2]
+    Y_test = split[3]
     # TRAIN-TEST SPLIT
     model.fit(X_train, Y_train)
   
