@@ -159,7 +159,13 @@ def main():
     models = pd.DataFrame({'Model': ['CNN', 'Decision Tree', 'Random Forest', 'K Neighbors', 'ANN_FTN'], 'Score': [cnn, dt, rf, kn, ann_ftn]})
     models.sort_values(by='Score', ascending=False)
 
-    bar = px.bar(data_frame=models, x='Score', y='Model', color='Score', template='plotly_dark', title='Comparison')
+    bar = px.bar(data_frame=models, x='Score', y='Model', color='Score', title='Comparison')
+    bar.update_layout(
+        font=dict(
+            size=18,  # Set the font size here
+            color="Black"
+        )
+    )
 
     bar.show()
 
